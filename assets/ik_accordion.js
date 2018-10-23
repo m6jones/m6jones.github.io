@@ -38,7 +38,7 @@
 			'aria-multiselectable': !this.options.autoCollapse // define if more than one panel can be expanded
 		}).addClass('ik_accordion');
 
-		this.headers = $elem.children('dt').attr({'role': 'heading'}).each(function(i, el) {
+		this.headers = $elem.children('dt').each(function(i, el) {
 			var $me, $btn;
 			
 			$me = $(el);
@@ -55,7 +55,8 @@
         .on('click', {'plugin': plugin}, plugin.togglePanel);
         
 			$me.empty().append($btn); // wrap content of each header in an element with role button
-		});
+		})
+		.attr({'role': 'heading'}); // set heading role for each accordion header;
 		
 		this.panels = $elem.children('dd').each(function(i, el) {
 			var $me = $(this), id = $elem.attr('id') + '_panel_' + i;
@@ -84,26 +85,33 @@
 		$elem = $(plugin.element);
 		$me = $(event.target);
 		$panel = $me.parent('dt').next();
-		
+		isVisible = !!$panel.is(':visible');
+
 		if(plugin.options.autoCollapse) { // expand current panel and collapse the rest
 			
 			plugin.headers.each(function(i, el) {
 				var $hdr, $btn; 
 				
 				$hdr = $(el);
+				$panel = $hdr.next();
 				$btn = $hdr.find('.button');
 				
-				if($btn[0] != $(event.currentTarget)[0] || $panel.is(':visible')) { 
+				if($btn[0] != $(event.currentTarget)[0] || isVisible) { 
 					$btn.removeClass('expanded');
+					$btn.attr({'aria-expanded': false }); 
+					$panel.attr({'aria-hidden': true }); 
 					$hdr.next().slideUp(plugin.options.animationSpeed);
 				} else { 
 					$btn.addClass('expanded');
+					$btn.attr({'aria-expanded': true }); 
+					$panel.attr({'aria-hidden': false }); 
 					$hdr.next().slideDown(plugin.options.animationSpeed);
 				}
 			});
 			
 		} else { // toggle current panel depending on the state
-			isVisible = !!$panel.is(':visible');
+			$me.attr({'aria-expanded': !isVisible}); 
+			$panel.attr({'aria-hidden': isVisible }); 
 			$panel.slideToggle({ duration: plugin.options.animationSpeed });
 			
 		}
